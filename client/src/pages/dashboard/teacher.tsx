@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { CalendarPlus, BarChart3, History, ClipboardList } from "lucide-react";
+import { Calendar, CheckCircle, Clock, Umbrella, User, FileText, UserCheck } from "lucide-react";
 
 interface LeaveRequest {
   id: number;
@@ -149,114 +149,109 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <DashboardHeader 
-        role={user?.role || "teacher"} 
-        title="My Dashboard" 
-        subtitle={`${user?.name} (${user?.id}) - ${user?.department}`} 
-      />
+      <div className="bg-white shadow-sm border-b">
+        <div className="px-6 py-4">
+          <h1 className="text-2xl font-bold text-gray-900">
+            {user?.role === "staff" ? "Staff Dashboard" : "Teacher Dashboard"}
+          </h1>
+          <p className="text-gray-600">
+            Welcome back, {user?.name}! Here's your attendance overview.
+          </p>
+        </div>
+      </div>
       
-      <main className="p-6 space-y-8">
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Leave Request */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CalendarPlus className="mr-3 text-indigo-600 w-5 h-5" />
-                Submit Leave Request
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleSubmitLeaveRequest} className="space-y-4">
+      <main className="p-6 space-y-6">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
                 <div>
-                  <Label className="block text-sm font-medium text-gray-700 mb-2">Leave Type</Label>
-                  <Select 
-                    value={leaveForm.leaveType} 
-                    onValueChange={(value) => setLeaveForm(prev => ({ ...prev, leaveType: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sick">Sick Leave</SelectItem>
-                      <SelectItem value="annual">Annual Leave</SelectItem>
-                      <SelectItem value="personal">Personal Leave</SelectItem>
-                      <SelectItem value="emergency">Emergency Leave</SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <p className="text-sm text-gray-600">This Month</p>
+                  <p className="text-2xl font-bold text-blue-600">{stats.thisMonth} Days</p>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="block text-sm font-medium text-gray-700 mb-2">From Date</Label>
-                    <Input 
-                      type="date" 
-                      value={leaveForm.fromDate}
-                      onChange={(e) => setLeaveForm(prev => ({ ...prev, fromDate: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label className="block text-sm font-medium text-gray-700 mb-2">To Date</Label>
-                    <Input 
-                      type="date" 
-                      value={leaveForm.toDate}
-                      onChange={(e) => setLeaveForm(prev => ({ ...prev, toDate: e.target.value }))}
-                    />
-                  </div>
+                <div className="bg-blue-100 p-3 rounded-lg">
+                  <Calendar className="text-blue-600 w-6 h-6" />
                 </div>
-                <div>
-                  <Label className="block text-sm font-medium text-gray-700 mb-2">Reason</Label>
-                  <Textarea 
-                    rows={3}
-                    value={leaveForm.reason}
-                    onChange={(e) => setLeaveForm(prev => ({ ...prev, reason: e.target.value }))}
-                    placeholder="Please provide reason for leave..."
-                  />
-                </div>
-                <Button 
-                  type="submit" 
-                  disabled={submitLeaveRequestMutation.isPending}
-                  className="w-full bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {submitLeaveRequestMutation.isPending ? "Submitting..." : "Submit Request"}
-                </Button>
-              </form>
+              </div>
             </CardContent>
           </Card>
 
-          {/* Attendance Summary */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <BarChart3 className="mr-3 text-indigo-600 w-5 h-5" />
-                Attendance Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center p-3 bg-green-50 rounded-lg">
-                  <span className="text-gray-700">This Month</span>
-                  <span className="font-semibold text-green-600">{stats.thisMonth} days</span>
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Present Days</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {attendanceHistory?.filter(a => a.status === "present").length || 0}
+                  </p>
                 </div>
-                <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                  <span className="text-gray-700">This Year</span>
-                  <span className="font-semibold text-blue-600">{stats.thisYear} days</span>
+                <div className="bg-green-100 p-3 rounded-lg">
+                  <CheckCircle className="text-green-600 w-6 h-6" />
                 </div>
-                <div className="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                  <span className="text-gray-700">Leave Balance</span>
-                  <span className="font-semibold text-orange-600">{stats.leaveBalance} days</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Late Days</p>
+                  <p className="text-2xl font-bold text-orange-600">1</p>
+                </div>
+                <div className="bg-orange-100 p-3 rounded-lg">
+                  <Clock className="text-orange-600 w-6 h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-gray-600">Pending Leaves</p>
+                  <p className="text-2xl font-bold text-orange-600">
+                    {leaveRequests?.filter(r => r.status === "pending").length || 0}
+                  </p>
+                </div>
+                <div className="bg-orange-100 p-3 rounded-lg">
+                  <Umbrella className="text-orange-600 w-6 h-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
         </div>
 
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6 text-center">
+              <UserCheck className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+              <h3 className="font-medium text-gray-800">My Attendance</h3>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6 text-center">
+              <FileText className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+              <h3 className="font-medium text-gray-800">Request Leave</h3>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-6 text-center">
+              <User className="w-8 h-8 text-gray-600 mx-auto mb-3" />
+              <h3 className="font-medium text-gray-800">Profile</h3>
+            </CardContent>
+          </Card>
+        </div>
+
         {/* Attendance History */}
-        <Card>
+        <Card className="bg-white">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <History className="mr-3 text-indigo-600 w-6 h-6" />
-              Recent Attendance History
-            </CardTitle>
+            <CardTitle>My Attendance History</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             <div className="overflow-x-auto">
@@ -266,15 +261,15 @@ export default function TeacherDashboard() {
                     <th className="text-left p-4 font-medium text-gray-700">Date</th>
                     <th className="text-left p-4 font-medium text-gray-700">Day</th>
                     <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Time In</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Time Out</th>
+                    <th className="text-left p-4 font-medium text-gray-700">Check In</th>
+                    <th className="text-left p-4 font-medium text-gray-700">Check Out</th>
                     <th className="text-left p-4 font-medium text-gray-700">Hours</th>
                   </tr>
                 </thead>
                 <tbody>
                   {attendanceHistory && attendanceHistory.length > 0 ? (
                     attendanceHistory.slice(0, 10).map((record) => (
-                      <tr key={record.id} className="border-b">
+                      <tr key={record.id} className="border-b hover:bg-gray-50">
                         <td className="p-4 text-gray-800">
                           {new Date(record.date).toLocaleDateString()}
                         </td>
@@ -282,20 +277,29 @@ export default function TeacherDashboard() {
                           {getDayName(record.date)}
                         </td>
                         <td className="p-4">
-                          <Badge className={`${getStatusBadgeColor(record.status)} capitalize`}>
-                            {record.status.replace("_", " ")}
+                          <Badge 
+                            className={`${
+                              record.status === "present" 
+                                ? "bg-green-100 text-green-800" 
+                                : record.status === "absent"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-orange-100 text-orange-800"
+                            } capitalize`}
+                          >
+                            {record.status === "present" ? "Present" : 
+                             record.status === "absent" ? "Absent" : "Late"}
                           </Badge>
                         </td>
                         <td className="p-4 text-gray-700">{record.timeIn || "-"}</td>
                         <td className="p-4 text-gray-700">{record.timeOut || "-"}</td>
                         <td className="p-4 text-gray-700">
-                          {record.timeIn && record.timeOut ? "8h 15m" : "-"}
+                          {record.timeIn && record.timeOut ? "7:45" : "-"}
                         </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan={6} className="p-4 text-center text-gray-500">
+                      <td colSpan={6} className="p-8 text-center text-gray-500">
                         No attendance records found
                       </td>
                     </tr>
@@ -306,39 +310,48 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        {/* Leave Request Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <ClipboardList className="mr-3 text-indigo-600 w-6 h-6" />
-              My Leave Requests
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {leaveRequests && leaveRequests.length > 0 ? (
-                leaveRequests.map((request) => (
-                  <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                    <div>
-                      <h3 className="font-medium text-gray-800 capitalize">{request.leaveType} Leave</h3>
-                      <p className="text-gray-600 text-sm">
-                        {new Date(request.fromDate).toLocaleDateString()} - {new Date(request.toDate).toLocaleDateString()}
-                      </p>
-                      <p className="text-gray-500 text-sm">{request.reason}</p>
-                    </div>
-                    <Badge className={`${getStatusBadgeColor(request.status)} capitalize`}>
-                      {request.status}
-                    </Badge>
-                  </div>
-                ))
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No leave requests found
+        {/* Summary Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Card className="bg-green-50 border-green-200">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <CheckCircle className="text-green-600 w-8 h-8 mr-4" />
+                <div>
+                  <p className="text-sm text-green-600">Present Days</p>
+                  <p className="text-2xl font-bold text-green-600">
+                    {attendanceHistory?.filter(a => a.status === "present").length || 0}
+                  </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-orange-50 border-orange-200">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <Clock className="text-orange-600 w-8 h-8 mr-4" />
+                <div>
+                  <p className="text-sm text-orange-600">Late Days</p>
+                  <p className="text-2xl font-bold text-orange-600">1</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-red-50 border-red-200">
+            <CardContent className="p-6">
+              <div className="flex items-center">
+                <UserCheck className="text-red-600 w-8 h-8 mr-4" />
+                <div>
+                  <p className="text-sm text-red-600">Absent Days</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {attendanceHistory?.filter(a => a.status === "absent").length || 0}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </main>
     </div>
   );
