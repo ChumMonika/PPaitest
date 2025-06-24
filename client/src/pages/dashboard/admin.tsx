@@ -23,12 +23,18 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+  const [currentView, setCurrentView] = useState("users"); // "users" or "attendance"
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
   const { data: users, isLoading } = useQuery<User[]>({
     queryKey: ["/api/users"],
+  });
+
+  const { data: attendanceData, isLoading: attendanceLoading } = useQuery({
+    queryKey: ["/api/attendance-all"],
+    enabled: currentView === "attendance",
   });
 
   const deleteUserMutation = useMutation({
@@ -156,108 +162,177 @@ export default function AdminDashboard() {
         </div>
 
         {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Card 
+            className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${
+              currentView === "users" ? "ring-2 ring-blue-500" : ""
+            }`}
+            onClick={() => setCurrentView("users")}
+          >
             <CardContent className="p-6 text-center">
               <Users className="w-8 h-8 text-gray-600 mx-auto mb-3" />
               <h3 className="font-medium text-gray-800">User Management</h3>
             </CardContent>
           </Card>
 
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
+          <Card 
+            className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${
+              currentView === "attendance" ? "ring-2 ring-blue-500" : ""
+            }`}
+            onClick={() => setCurrentView("attendance")}
+          >
             <CardContent className="p-6 text-center">
               <ClipboardList className="w-8 h-8 text-gray-600 mx-auto mb-3" />
               <h3 className="font-medium text-gray-800">Attendance Logs</h3>
             </CardContent>
           </Card>
-
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <Settings className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-              <h3 className="font-medium text-gray-800">System Settings</h3>
-            </CardContent>
-          </Card>
         </div>
 
-        {/* System Users */}
-        <Card className="bg-white">
-          <CardHeader>
-            <div className="flex justify-between items-center">
-              <CardTitle>System Users</CardTitle>
-              <Button
-                onClick={() => setAddUserModalOpen(true)}
-                className="bg-blue-600 hover:bg-blue-700"
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Add User
-              </Button>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="p-0">
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left p-4 font-medium text-gray-700">User ID</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Name</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Role</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Department</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Status</th>
-                    <th className="text-left p-4 font-medium text-gray-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id} className="border-b hover:bg-gray-50">
-                      <td className="p-4 font-medium text-gray-800">{user.id}</td>
-                      <td className="p-4 text-gray-800">{user.name}</td>
-                      <td className="p-4">
-                        <Badge className={`${getRoleBadgeColor(user.role)} capitalize`}>
-                          {user.role}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-gray-700">{user.department || "Administration"}</td>
-                      <td className="p-4">
-                        <Badge className={user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
-                          {user.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex space-x-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-blue-600 hover:text-blue-800"
-                            title="Edit"
-                          >
-                            <Edit className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="text-red-600 hover:text-red-800"
-                            title="Delete"
-                            onClick={() => handleDeleteUser(user.id, user.name)}
-                            disabled={deleteUserMutation.isPending}
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </td>
+        {/* Content based on selected view */}
+        {currentView === "users" && (
+          <Card className="bg-white">
+            <CardHeader>
+              <div className="flex justify-between items-center">
+                <CardTitle>System Users</CardTitle>
+                <Button
+                  onClick={() => setAddUserModalOpen(true)}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add User
+                </Button>
+              </div>
+            </CardHeader>
+            
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="text-left p-4 font-medium text-gray-700">User ID</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Name</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Role</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Department</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Status</th>
+                      <th className="text-left p-4 font-medium text-gray-700">Actions</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-              
-              {filteredUsers.length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  No users found
+                  </thead>
+                  <tbody>
+                    {filteredUsers.map((user) => (
+                      <tr key={user.id} className="border-b hover:bg-gray-50">
+                        <td className="p-4 font-medium text-gray-800">{user.id}</td>
+                        <td className="p-4 text-gray-800">{user.name}</td>
+                        <td className="p-4">
+                          <Badge className={`${getRoleBadgeColor(user.role)} capitalize`}>
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="p-4 text-gray-700">{user.department || "Administration"}</td>
+                        <td className="p-4">
+                          <Badge className={user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                            {user.isActive ? "Active" : "Inactive"}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex space-x-2">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-blue-600 hover:text-blue-800"
+                              title="Edit"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-800"
+                              title="Delete"
+                              onClick={() => handleDeleteUser(user.id, user.name)}
+                              disabled={deleteUserMutation.isPending}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+                
+                {filteredUsers.length === 0 && (
+                  <div className="text-center py-8 text-gray-500">
+                    No users found
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {currentView === "attendance" && (
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle>Attendance Logs</CardTitle>
+              <p className="text-sm text-gray-600">View all staff and teacher attendance records</p>
+            </CardHeader>
+            
+            <CardContent className="p-0">
+              {attendanceLoading ? (
+                <div className="text-center py-8 text-gray-500">Loading attendance data...</div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="text-left p-4 font-medium text-gray-700">Date</th>
+                        <th className="text-left p-4 font-medium text-gray-700">User ID</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Name</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Role</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Status</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Time In</th>
+                        <th className="text-left p-4 font-medium text-gray-700">Time Out</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {attendanceData && attendanceData.length > 0 ? (
+                        attendanceData.map((record: any) => (
+                          <tr key={record.id} className="border-b hover:bg-gray-50">
+                            <td className="p-4 text-gray-800">{new Date(record.date).toLocaleDateString()}</td>
+                            <td className="p-4 font-medium text-gray-800">{record.userId}</td>
+                            <td className="p-4 text-gray-800">{record.user?.name || "Unknown"}</td>
+                            <td className="p-4">
+                              <Badge className={`${getRoleBadgeColor(record.user?.role || 'staff')} capitalize`}>
+                                {record.user?.role || "N/A"}
+                              </Badge>
+                            </td>
+                            <td className="p-4">
+                              <Badge className={
+                                record.status === "present" ? "bg-green-100 text-green-800" :
+                                record.status === "late" ? "bg-yellow-100 text-yellow-800" :
+                                "bg-red-100 text-red-800"
+                              }>
+                                {record.status}
+                              </Badge>
+                            </td>
+                            <td className="p-4 text-gray-700">{record.timeIn || "N/A"}</td>
+                            <td className="p-4 text-gray-700">{record.timeOut || "N/A"}</td>
+                          </tr>
+                        ))
+                      ) : (
+                        <tr>
+                          <td colSpan={7} className="text-center py-8 text-gray-500">
+                            No attendance records found
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        )}
       </main>
 
       <AddUserModal
