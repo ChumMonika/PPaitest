@@ -132,7 +132,11 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(user: InsertUser): Promise<User> {
-    const newUser: User = { ...user, isActive: true };
+    const newUser: User = { 
+      ...user, 
+      isActive: true,
+      department: user.department || null
+    };
     this.users.set(newUser.id, newUser);
     return newUser;
   }
@@ -176,6 +180,9 @@ export class MemStorage implements IStorage {
     const newAttendance: Attendance = {
       id: this.currentAttendanceId++,
       ...attendance,
+      timeIn: attendance.timeIn || null,
+      timeOut: attendance.timeOut || null,
+      markedBy: attendance.markedBy || null,
       markedAt: new Date(),
     };
     this.attendanceRecords.set(`${attendance.userId}-${attendance.date}`, newAttendance);
@@ -198,13 +205,13 @@ export class MemStorage implements IStorage {
   async getLeaveRequestsByUser(userId: string): Promise<LeaveRequest[]> {
     return Array.from(this.leaveRequestsList.values())
       .filter(req => req.userId === userId)
-      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+      .sort((a, b) => (b.createdAt?.getTime() || 0) - (a.createdAt?.getTime() || 0));
   }
 
   async getPendingLeaveRequests(): Promise<LeaveRequest[]> {
     return Array.from(this.leaveRequestsList.values())
       .filter(req => req.status === "pending")
-      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+      .sort((a, b) => (a.createdAt?.getTime() || 0) - (b.createdAt?.getTime() || 0));
   }
 
   async updateLeaveRequestStatus(id: number, status: string, approvedBy: string): Promise<LeaveRequest | undefined> {
@@ -236,6 +243,8 @@ export class MemStorage implements IStorage {
     const newSchedule: Schedule = {
       id: this.currentScheduleId++,
       ...schedule,
+      subject: schedule.subject || null,
+      workType: schedule.workType || null,
     };
     this.schedulesList.set(newSchedule.id, newSchedule);
     return newSchedule;
