@@ -248,6 +248,102 @@ export default function TeacherDashboard() {
           </Card>
         </div>
 
+        {/* Leave Request Form */}
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <FileText className="mr-3 text-indigo-600 w-5 h-5" />
+              Submit Leave Request
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <form onSubmit={handleSubmitLeaveRequest} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="block text-sm font-medium text-gray-700 mb-2">Leave Type</Label>
+                  <Select 
+                    value={leaveForm.leaveType} 
+                    onValueChange={(value) => setLeaveForm(prev => ({ ...prev, leaveType: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="sick">Sick Leave</SelectItem>
+                      <SelectItem value="annual">Annual Leave</SelectItem>
+                      <SelectItem value="personal">Personal Leave</SelectItem>
+                      <SelectItem value="emergency">Emergency Leave</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="block text-sm font-medium text-gray-700 mb-2">From Date</Label>
+                    <Input 
+                      type="date" 
+                      value={leaveForm.fromDate}
+                      onChange={(e) => setLeaveForm(prev => ({ ...prev, fromDate: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="block text-sm font-medium text-gray-700 mb-2">To Date</Label>
+                    <Input 
+                      type="date" 
+                      value={leaveForm.toDate}
+                      onChange={(e) => setLeaveForm(prev => ({ ...prev, toDate: e.target.value }))}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div>
+                <Label className="block text-sm font-medium text-gray-700 mb-2">Reason</Label>
+                <Textarea 
+                  rows={3}
+                  value={leaveForm.reason}
+                  onChange={(e) => setLeaveForm(prev => ({ ...prev, reason: e.target.value }))}
+                  placeholder="Please provide reason for leave..."
+                />
+              </div>
+              <div className="flex justify-end">
+                <Button 
+                  type="submit" 
+                  disabled={submitLeaveRequestMutation.isPending}
+                  className="bg-indigo-600 hover:bg-indigo-700"
+                >
+                  {submitLeaveRequestMutation.isPending ? "Submitting..." : "Submit Request"}
+                </Button>
+              </div>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* My Leave Requests */}
+        {leaveRequests && leaveRequests.length > 0 && (
+          <Card className="bg-white">
+            <CardHeader>
+              <CardTitle>My Leave Requests</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {leaveRequests.map((request) => (
+                  <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+                    <div>
+                      <h3 className="font-medium text-gray-800 capitalize">{request.leaveType} Leave</h3>
+                      <p className="text-gray-600 text-sm">
+                        {new Date(request.fromDate).toLocaleDateString()} - {new Date(request.toDate).toLocaleDateString()}
+                      </p>
+                      <p className="text-gray-500 text-sm">{request.reason}</p>
+                    </div>
+                    <Badge className={`${getStatusBadgeColor(request.status)} capitalize`}>
+                      {request.status}
+                    </Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Attendance History */}
         <Card className="bg-white">
           <CardHeader>
