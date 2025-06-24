@@ -167,20 +167,6 @@ export default function TeacherDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">This Month</p>
-                  <p className="text-2xl font-bold text-blue-600">{stats.thisMonth} Days</p>
-                </div>
-                <div className="bg-blue-100 p-3 rounded-lg">
-                  <Calendar className="text-blue-600 w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
                   <p className="text-sm text-gray-600">Present Days</p>
                   <p className="text-2xl font-bold text-green-600">
                     {attendanceHistory?.filter(a => a.status === "present").length || 0}
@@ -211,6 +197,22 @@ export default function TeacherDashboard() {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
+                  <p className="text-sm text-gray-600">Absence Days</p>
+                  <p className="text-2xl font-bold text-red-600">
+                    {attendanceHistory?.filter(a => a.status === "absent").length || 0}
+                  </p>
+                </div>
+                <div className="bg-red-100 p-3 rounded-lg">
+                  <UserCheck className="text-red-600 w-6 h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
                   <p className="text-sm text-gray-600">Pending Leaves</p>
                   <p className="text-2xl font-bold text-orange-600">
                     {leaveRequests?.filter(r => r.status === "pending").length || 0}
@@ -220,30 +222,6 @@ export default function TeacherDashboard() {
                   <Umbrella className="text-orange-600 w-6 h-6" />
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <UserCheck className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-              <h3 className="font-medium text-gray-800">My Attendance</h3>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <FileText className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-              <h3 className="font-medium text-gray-800">Request Leave</h3>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white cursor-pointer hover:shadow-md transition-shadow">
-            <CardContent className="p-6 text-center">
-              <User className="w-8 h-8 text-gray-600 mx-auto mb-3" />
-              <h3 className="font-medium text-gray-800">Profile</h3>
             </CardContent>
           </Card>
         </div>
@@ -318,12 +296,12 @@ export default function TeacherDashboard() {
         </Card>
 
         {/* My Leave Requests */}
-        {leaveRequests && leaveRequests.length > 0 && (
-          <Card className="bg-white">
-            <CardHeader>
-              <CardTitle>My Leave Requests</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <Card className="bg-white">
+          <CardHeader>
+            <CardTitle>My Leave Requests</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {leaveRequests && leaveRequests.length > 0 ? (
               <div className="space-y-4">
                 {leaveRequests.map((request) => (
                   <div key={request.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
@@ -334,15 +312,30 @@ export default function TeacherDashboard() {
                       </p>
                       <p className="text-gray-500 text-sm">{request.reason}</p>
                     </div>
-                    <Badge className={`${getStatusBadgeColor(request.status)} capitalize`}>
-                      {request.status}
-                    </Badge>
+                    <div className="flex items-center space-x-2">
+                      <Badge className={`${getStatusBadgeColor(request.status)} capitalize`}>
+                        {request.status}
+                      </Badge>
+                      {request.status === "approved" && (
+                        <span className="text-green-600 text-sm font-medium">✓ Approved</span>
+                      )}
+                      {request.status === "rejected" && (
+                        <span className="text-red-600 text-sm font-medium">✗ Rejected</span>
+                      )}
+                      {request.status === "pending" && (
+                        <span className="text-orange-600 text-sm font-medium">⏳ Pending</span>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>
-            </CardContent>
-          </Card>
-        )}
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                No leave requests found
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Attendance History */}
         <Card className="bg-white">
@@ -406,48 +399,7 @@ export default function TeacherDashboard() {
           </CardContent>
         </Card>
 
-        {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="bg-green-50 border-green-200">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <CheckCircle className="text-green-600 w-8 h-8 mr-4" />
-                <div>
-                  <p className="text-sm text-green-600">Present Days</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {attendanceHistory?.filter(a => a.status === "present").length || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          <Card className="bg-orange-50 border-orange-200">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <Clock className="text-orange-600 w-8 h-8 mr-4" />
-                <div>
-                  <p className="text-sm text-orange-600">Late Days</p>
-                  <p className="text-2xl font-bold text-orange-600">1</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-red-50 border-red-200">
-            <CardContent className="p-6">
-              <div className="flex items-center">
-                <UserCheck className="text-red-600 w-8 h-8 mr-4" />
-                <div>
-                  <p className="text-sm text-red-600">Absent Days</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {attendanceHistory?.filter(a => a.status === "absent").length || 0}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
       </main>
     </div>
   );

@@ -100,6 +100,7 @@ This is a comprehensive university staff attendance management system built with
 ```
 Changelog:
 - June 24, 2025. Initial setup
+- June 24, 2025. Updated Teacher/Staff dashboard design to match user specifications with simplified layout showing Present Days, Late Days, Absence Days, Pending Leaves, Attendance History, and Leave Request functionality with approval status indicators
 ```
 
 ## User Preferences
