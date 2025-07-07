@@ -5,13 +5,26 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest } from "@/lib/queryClient";
-import { Calendar, CheckCircle, Clock, Umbrella, User, FileText, UserCheck } from "lucide-react";
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  Umbrella,
+  UserCheck,
+  FileText,
+} from "lucide-react";
 
 interface LeaveRequest {
   id: number;
@@ -94,13 +107,17 @@ export default function TeacherDashboard() {
 
   const getStatusBadgeColor = (status: string) => {
     switch (status) {
-      case "present": return "bg-green-100 text-green-800";
-      case "absent": return "bg-red-100 text-red-800";
-      case "on_leave": return "bg-orange-100 text-orange-800";
-      case "approved": return "bg-green-100 text-green-800";
-      case "rejected": return "bg-red-100 text-red-800";
-      case "pending": return "bg-orange-100 text-orange-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "present":
+      case "approved":
+        return "bg-green-100 text-green-800";
+      case "absent":
+      case "rejected":
+        return "bg-red-100 text-red-800";
+      case "on_leave":
+      case "pending":
+        return "bg-orange-100 text-orange-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
@@ -113,7 +130,7 @@ export default function TeacherDashboard() {
 
     const currentMonth = new Date().getMonth();
     const currentYear = new Date().getFullYear();
-    
+
     const thisMonthAttendance = attendanceHistory.filter(record => {
       const recordDate = new Date(record.date);
       return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear;
@@ -130,7 +147,7 @@ export default function TeacherDashboard() {
     return {
       thisMonth: `${thisMonthPresent}/${thisMonthAttendance.length}`,
       thisYear: `${thisYearPresent}/${thisYearAttendance.length}`,
-      leaveBalance: "12", // This would be calculated based on used leave days
+      leaveBalance: "12",
     };
   };
 
@@ -139,7 +156,11 @@ export default function TeacherDashboard() {
   if (leaveRequestsLoading || attendanceLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <DashboardHeader role={user?.role || "teacher"} title="My Dashboard" subtitle={`${user?.name} - ${user?.department}`} />
+        <DashboardHeader
+          role={user?.role || "teacher"}
+          title="My Dashboard"
+          subtitle={`${user?.name} - ${user?.department}`}
+        />
         <main className="p-6">
           <div className="text-center">Loading...</div>
         </main>
@@ -149,151 +170,70 @@ export default function TeacherDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">
-            {user?.role === "staff" ? "Staff Dashboard" : "Teacher Dashboard"}
-          </h1>
-          <p className="text-gray-600">
-            Welcome back, {user?.name}! Here's your attendance overview.
-          </p>
-        </div>
-      </div>
-      
+      {/* ✅ LOGOUT header */}
+      <DashboardHeader
+        role={user?.role || "teacher"}
+        title={user?.role === "staff" ? "Staff Dashboard" : "Teacher Dashboard"}
+        subtitle={`${user?.name} - ${user?.department}`}
+      />
+
       <main className="p-6 space-y-6">
-        {/* Stats Cards */}
+        {/* Dashboard Stats */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Present Days</p>
-                  <p className="text-2xl font-bold text-green-600">
-                    {attendanceHistory?.filter(a => a.status === "present").length || 0}
-                  </p>
-                </div>
-                <div className="bg-green-100 p-3 rounded-lg">
-                  <CheckCircle className="text-green-600 w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Late Days</p>
-                  <p className="text-2xl font-bold text-orange-600">1</p>
-                </div>
-                <div className="bg-orange-100 p-3 rounded-lg">
-                  <Clock className="text-orange-600 w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Absence Days</p>
-                  <p className="text-2xl font-bold text-red-600">
-                    {attendanceHistory?.filter(a => a.status === "absent").length || 0}
-                  </p>
-                </div>
-                <div className="bg-red-100 p-3 rounded-lg">
-                  <UserCheck className="text-red-600 w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600">Pending Leaves</p>
-                  <p className="text-2xl font-bold text-orange-600">
-                    {leaveRequests?.filter(r => r.status === "pending").length || 0}
-                  </p>
-                </div>
-                <div className="bg-orange-100 p-3 rounded-lg">
-                  <Umbrella className="text-orange-600 w-6 h-6" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Leave Request Form */}
-        <Card className="bg-white">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-3 text-indigo-600 w-5 h-5" />
-              Submit Leave Request
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmitLeaveRequest} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="block text-sm font-medium text-gray-700 mb-2">Leave Type</Label>
-                  <Select 
-                    value={leaveForm.leaveType} 
-                    onValueChange={(value) => setLeaveForm(prev => ({ ...prev, leaveType: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="sick">Sick Leave</SelectItem>
-                      <SelectItem value="annual">Annual Leave</SelectItem>
-                      <SelectItem value="personal">Personal Leave</SelectItem>
-                      <SelectItem value="emergency">Emergency Leave</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="block text-sm font-medium text-gray-700 mb-2">From Date</Label>
-                    <Input 
-                      type="date" 
-                      value={leaveForm.fromDate}
-                      onChange={(e) => setLeaveForm(prev => ({ ...prev, fromDate: e.target.value }))}
-                    />
-                  </div>
-                  <div>
-                    <Label className="block text-sm font-medium text-gray-700 mb-2">To Date</Label>
-                    <Input 
-                      type="date" 
-                      value={leaveForm.toDate}
-                      onChange={(e) => setLeaveForm(prev => ({ ...prev, toDate: e.target.value }))}
-                    />
-                  </div>
-                </div>
-              </div>
+          <Card><CardContent className="p-6">
+            <div className="flex items-center justify-between">
               <div>
-                <Label className="block text-sm font-medium text-gray-700 mb-2">Reason</Label>
-                <Textarea 
-                  rows={3}
-                  value={leaveForm.reason}
-                  onChange={(e) => setLeaveForm(prev => ({ ...prev, reason: e.target.value }))}
-                  placeholder="Please provide reason for leave..."
-                />
+                <p className="text-sm text-gray-600">Present Days</p>
+                <p className="text-2xl font-bold text-green-600">
+                  {attendanceHistory?.filter(a => a.status === "present").length || 0}
+                </p>
               </div>
-              <div className="flex justify-end">
-                <Button 
-                  type="submit" 
-                  disabled={submitLeaveRequestMutation.isPending}
-                  className="bg-indigo-600 hover:bg-indigo-700"
-                >
-                  {submitLeaveRequestMutation.isPending ? "Submitting..." : "Submit Request"}
-                </Button>
+              <div className="bg-green-100 p-3 rounded-lg">
+                <CheckCircle className="text-green-600 w-6 h-6" />
               </div>
-            </form>
-          </CardContent>
-        </Card>
+            </div>
+          </CardContent></Card>
+
+          <Card><CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Late Days</p>
+                <p className="text-2xl font-bold text-orange-600">1</p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <Clock className="text-orange-600 w-6 h-6" />
+              </div>
+            </div>
+          </CardContent></Card>
+
+          <Card><CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Absence Days</p>
+                <p className="text-2xl font-bold text-red-600">
+                  {attendanceHistory?.filter(a => a.status === "absent").length || 0}
+                </p>
+              </div>
+              <div className="bg-red-100 p-3 rounded-lg">
+                <UserCheck className="text-red-600 w-6 h-6" />
+              </div>
+            </div>
+          </CardContent></Card>
+
+          <Card><CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-gray-600">Pending Leaves</p>
+                <p className="text-2xl font-bold text-orange-600">
+                  {leaveRequests?.filter(r => r.status === "pending").length || 0}
+                </p>
+              </div>
+              <div className="bg-orange-100 p-3 rounded-lg">
+                <Umbrella className="text-orange-600 w-6 h-6" />
+              </div>
+            </div>
+          </CardContent></Card>
+        </div>
 
         {/* My Leave Requests */}
         <Card className="bg-white">

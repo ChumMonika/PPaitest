@@ -123,7 +123,7 @@ export default function AssistantDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <ClipboardCheck className="mr-3 text-orange-600 w-6 h-6" />
-              🧑‍💼 Staff on Monday - Schedule & Attendance
+              🧑‍💼 Staff on Today - Schedule & Attendance
               <span className="ml-4 text-sm text-gray-500 font-normal">
                 ({new Date().toLocaleDateString()})
               </span>

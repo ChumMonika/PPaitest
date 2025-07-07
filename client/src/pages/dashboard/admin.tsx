@@ -2,13 +2,22 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AddUserModal } from "@/components/add-user-modal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { Users, UserCheck, Calendar, Plus, Edit, Trash2, Search, Settings, ClipboardList } from "lucide-react";
+import {
+  Users,
+  UserCheck,
+  Calendar,
+  Plus,
+  Edit,
+  Trash2,
+  ClipboardList,
+} from "lucide-react";
+
+import { DashboardHeader } from "@/components/dashboard-header"; // ✅ ADDED
 
 interface User {
   id: string;
@@ -20,11 +29,12 @@ interface User {
 }
 
 export default function AdminDashboard() {
+  const { logout } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
-  const [currentView, setCurrentView] = useState("users"); // "users" or "attendance"
-  
+  const [currentView, setCurrentView] = useState("users");
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -66,37 +76,42 @@ export default function AdminDashboard() {
 
   const getRoleBadgeColor = (role: string) => {
     switch (role) {
-      case "head": return "bg-blue-100 text-blue-800";
-      case "admin": return "bg-purple-100 text-purple-800";
-      case "teacher": return "bg-green-100 text-green-800";
-      case "staff": return "bg-orange-100 text-orange-800";
-      case "mazer": return "bg-yellow-100 text-yellow-800";
-      case "assistant": return "bg-pink-100 text-pink-800";
-      default: return "bg-gray-100 text-gray-800";
+      case "head":
+        return "bg-blue-100 text-blue-800";
+      case "admin":
+        return "bg-purple-100 text-purple-800";
+      case "teacher":
+        return "bg-green-100 text-green-800";
+      case "staff":
+        return "bg-orange-100 text-orange-800";
+      case "mazer":
+        return "bg-yellow-100 text-yellow-800";
+      case "assistant":
+        return "bg-pink-100 text-pink-800";
+      default:
+        return "bg-gray-100 text-gray-800";
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(' ').map(word => word[0]).join('').toUpperCase();
-  };
-
-  const filteredUsers = users?.filter(user => {
-    const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = roleFilter === "all" || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  }) || [];
+  const filteredUsers =
+    users?.filter((user) => {
+      const matchesSearch =
+        user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        user.email.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesRole = roleFilter === "all" || user.role === roleFilter;
+      return matchesSearch && matchesRole;
+    }) || [];
 
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <div className="bg-white shadow-sm border-b">
-          <div className="px-6 py-4">
-            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            <p className="text-gray-600">Manage users and system administration.</p>
-          </div>
-        </div>
+        {/* ✅ Loading with header */}
+        <DashboardHeader
+          role="admin"
+          title="Admin Dashboard"
+          subtitle="Manage users and system administration."
+        />
         <main className="p-6">
           <div className="text-center">Loading...</div>
         </main>
@@ -106,13 +121,13 @@ export default function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow-sm border-b">
-        <div className="px-6 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-          <p className="text-gray-600">Manage users and system administration.</p>
-        </div>
-      </div>
-      
+      {/* ✅ ADDED HEADER */}
+      <DashboardHeader
+        role="admin"
+        title="Admin Dashboard"
+        subtitle="Manage users and system administration."
+      />
+
       <main className="p-6 space-y-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -136,7 +151,7 @@ export default function AdminDashboard() {
                 <div>
                   <p className="text-sm text-gray-600">Active Users</p>
                   <p className="text-2xl font-bold text-green-600">
-                    {users?.filter(u => u.isActive).length || 0}
+                    {users?.filter((u) => u.isActive).length || 0}
                   </p>
                 </div>
                 <div className="bg-green-100 p-3 rounded-lg">
@@ -163,7 +178,7 @@ export default function AdminDashboard() {
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card 
+          <Card
             className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${
               currentView === "users" ? "ring-2 ring-blue-500" : ""
             }`}
@@ -175,7 +190,7 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          <Card 
+          <Card
             className={`bg-white cursor-pointer hover:shadow-md transition-shadow ${
               currentView === "attendance" ? "ring-2 ring-blue-500" : ""
             }`}
@@ -188,7 +203,7 @@ export default function AdminDashboard() {
           </Card>
         </div>
 
-        {/* Content based on selected view */}
+        {/* Main Content Area */}
         {currentView === "users" && (
           <Card className="bg-white">
             <CardHeader>
@@ -203,7 +218,7 @@ export default function AdminDashboard() {
                 </Button>
               </div>
             </CardHeader>
-            
+
             <CardContent className="p-0">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -227,9 +242,17 @@ export default function AdminDashboard() {
                             {user.role}
                           </Badge>
                         </td>
-                        <td className="p-4 text-gray-700">{user.department || "Administration"}</td>
+                        <td className="p-4 text-gray-700">
+                          {user.department || "Administration"}
+                        </td>
                         <td className="p-4">
-                          <Badge className={user.isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800"}>
+                          <Badge
+                            className={
+                              user.isActive
+                                ? "bg-green-100 text-green-800"
+                                : "bg-red-100 text-red-800"
+                            }
+                          >
                             {user.isActive ? "Active" : "Inactive"}
                           </Badge>
                         </td>
@@ -259,11 +282,9 @@ export default function AdminDashboard() {
                     ))}
                   </tbody>
                 </table>
-                
+
                 {filteredUsers.length === 0 && (
-                  <div className="text-center py-8 text-gray-500">
-                    No users found
-                  </div>
+                  <div className="text-center py-8 text-gray-500">No users found</div>
                 )}
               </div>
             </CardContent>
@@ -274,9 +295,11 @@ export default function AdminDashboard() {
           <Card className="bg-white">
             <CardHeader>
               <CardTitle>Attendance Logs</CardTitle>
-              <p className="text-sm text-gray-600">View all staff and teacher attendance records</p>
+              <p className="text-sm text-gray-600">
+                View all staff and teacher attendance records
+              </p>
             </CardHeader>
-            
+
             <CardContent className="p-0">
               {attendanceLoading ? (
                 <div className="text-center py-8 text-gray-500">Loading attendance data...</div>
@@ -298,20 +321,32 @@ export default function AdminDashboard() {
                       {attendanceData && attendanceData.length > 0 ? (
                         attendanceData.map((record: any) => (
                           <tr key={record.id} className="border-b hover:bg-gray-50">
-                            <td className="p-4 text-gray-800">{new Date(record.date).toLocaleDateString()}</td>
+                            <td className="p-4 text-gray-800">
+                              {new Date(record.date).toLocaleDateString()}
+                            </td>
                             <td className="p-4 font-medium text-gray-800">{record.userId}</td>
-                            <td className="p-4 text-gray-800">{record.user?.name || "Unknown"}</td>
+                            <td className="p-4 text-gray-800">
+                              {record.user?.name || "Unknown"}
+                            </td>
                             <td className="p-4">
-                              <Badge className={`${getRoleBadgeColor(record.user?.role || 'staff')} capitalize`}>
+                              <Badge
+                                className={`${getRoleBadgeColor(
+                                  record.user?.role || "staff"
+                                )} capitalize`}
+                              >
                                 {record.user?.role || "N/A"}
                               </Badge>
                             </td>
                             <td className="p-4">
-                              <Badge className={
-                                record.status === "present" ? "bg-green-100 text-green-800" :
-                                record.status === "late" ? "bg-yellow-100 text-yellow-800" :
-                                "bg-red-100 text-red-800"
-                              }>
+                              <Badge
+                                className={
+                                  record.status === "present"
+                                    ? "bg-green-100 text-green-800"
+                                    : record.status === "late"
+                                    ? "bg-yellow-100 text-yellow-800"
+                                    : "bg-red-100 text-red-800"
+                                }
+                              >
                                 {record.status}
                               </Badge>
                             </td>
@@ -335,10 +370,7 @@ export default function AdminDashboard() {
         )}
       </main>
 
-      <AddUserModal
-        open={addUserModalOpen}
-        onOpenChange={setAddUserModalOpen}
-      />
+      <AddUserModal open={addUserModalOpen} onOpenChange={setAddUserModalOpen} />
     </div>
   );
 }

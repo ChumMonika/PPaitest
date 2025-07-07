@@ -32,7 +32,7 @@ export default function MazerDashboard() {
   const queryClient = useQueryClient();
 
   const { data: teacherSchedules, isLoading } = useQuery<ScheduleWithDetails[]>({
-    queryKey: ["/api/schedules/monday"],
+    queryKey: ["/api/schedules/Monday"],
   });
 
   const markAttendanceMutation = useMutation({
@@ -51,7 +51,7 @@ export default function MazerDashboard() {
         title: "Success",
         description: "Attendance marked successfully",
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/schedules/monday"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/schedules/Monday"] });
     },
     onError: (error: any) => {
       toast({
@@ -123,7 +123,7 @@ export default function MazerDashboard() {
           <CardHeader>
             <CardTitle className="flex items-center">
               <CalendarCheck className="mr-3 text-green-600 w-6 h-6" />
-              📅 Monday - Teacher Schedule & Attendance
+              📅 Today - Teacher Schedule & Attendance
               <span className="ml-4 text-sm text-gray-500 font-normal">
                 ({new Date().toLocaleDateString()})
               </span>
